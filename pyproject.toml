@@ -1,0 +1,14 @@
+[project]
+name = "weather"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "aiohttp>=3.12.4",
+    "aiosqlite>=0.21.0",
+    "alembic>=1.16.1",
+    "fastapi[all]>=0.115.12",
+    "geopy>=2.4.1",
+    "sqlalchemy>=2.0.41",
+]

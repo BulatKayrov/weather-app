@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WeatherPort - Погодный портал</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a2980, #26d0ce);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px 0;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        header p {
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 0 auto;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .search-section {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.93);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .popular-section {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.93);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i {
+            color: #3498db;
+        }
+
+        .popular-cities {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .popular-city {
+            background: rgba(236, 240, 241, 0.6);
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #e0e0e0;
+        }
+
+        .popular-city:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            background: rgba(236, 240, 241, 0.9);
+        }
+
+        .popular-city h3 {
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .popular-city .temp {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #e74c3c;
+            margin-bottom: 5px;
+        }
+
+        .popular-city .conditions {
+            color: #7f8c8d;
+            font-size: 1rem;
+            margin-bottom: 15px;
+        }
+
+        .popular-city .details {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+
+        .input-group {
+            display: flex;
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        input {
+            flex: 1;
+            padding: 16px 25px 16px 50px;
+            font-size: 17px;
+            border: 2px solid #3498db;
+            border-radius: 12px;
+            outline: none;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        input:focus {
+            border-color: #2980b9;
+            box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.25);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #7f8c8d;
+            font-size: 20px;
+        }
+
+        button {
+            position: absolute;
+            right: 6px;
+            top: 6px;
+            bottom: 6px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 0 28px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        button:hover {
+            background: #2980b9;
+            transform: translateY(-1px);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        .autocomplete-container {
+            position: relative;
+        }
+
+        .autocomplete-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            max-height: 300px;
+            overflow-y: auto;
+            background: white;
+            border-radius: 0 0 12px 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            margin-top: -2px;
+            display: none;
+        }
+
+        .autocomplete-item {
+            padding: 12px 20px;
+            text-align: left;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            transition: background 0.2s;
+        }
+
+        .autocomplete-item:hover {
+            background: #f5f9ff;
+        }
+
+        .autocomplete-item i {
+            margin-right: 15px;
+            color: #3498db;
+        }
+
+        .autocomplete-item .city-name {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .autocomplete-item .country {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            margin-left: 8px;
+        }
+
+        .autocomplete-item .region {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            margin-left: 5px;
+        }
+
+        .autocomplete-item .hint {
+            display: block;
+            font-size: 0.85em;
+            color: #95a5a6;
+            margin-top: 4px;
+        }
+
+        .weather-card {
+            background: linear-gradient(145deg, #ffffff, #f0f5ff);
+            border-radius: 18px;
+            padding: 30px;
+            margin-top: 20px;
+            box-shadow: 0 8px 25px rgba(0, 60, 150, 0.15);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-align: left;
+        }
+
+        .weather-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .error {
+            color: #c0392b;
+            background: #ffebee;
+            padding: 16px;
+            border-radius: 12px;
+            margin-top: 20px;
+            display: none;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 30px auto;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .city-name {
+            font-size: 32px;
+            font-weight: 800;
+            color: #2c3e50;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+
+        .timestamp {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 25px;
+            font-size: 15px;
+        }
+
+        .weather-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 18px;
+        }
+
+        .weather-item {
+            background: rgba(236, 240, 241, 0.4);
+            border-radius: 14px;
+            padding: 18px;
+            transition: transform 0.3s;
+        }
+
+        .weather-item:hover {
+            transform: translateY(-3px);
+            background: rgba(236, 240, 241, 0.6);
+        }
+
+        .weather-title {
+            font-size: 16px;
+            color: #7f8c8d;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .weather-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .weather-unit {
+            font-size: 16px;
+            color: #7f8c8d;
+            margin-left: 3px;
+        }
+
+        .temperature-highlight {
+            font-size: 28px;
+            color: #e74c3c;
+        }
+
+        .wind-direction {
+            display: inline-block;
+            margin-left: 10px;
+            font-size: 20px;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, #3498db, #2c3e50);
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+
+        .highlight .weather-title {
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        .highlight .weather-value {
+            color: white;
+        }
+
+        .info-text {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #7f8c8d;
+            text-align: center;
+        }
+
+        footer {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            padding: 20px;
+            margin-top: 30px;
+            font-size: 0.9rem;
+        }
+
+        .weather-icon {
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            font-size: 2rem;
+            color: #3498db;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+
+            .popular-cities {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <h1><i class="fas fa-sun"></i> Weather - сервис</h1>
+        <p>Точные прогнозы погоды для любого города в реальном времени</p>
+    </header>
+
+    <div class="main-content">
+        <div class="search-section">
+            <h2 class="section-title"><i class="fas fa-search"></i> Поиск города</h2>
+
+            <div class="autocomplete-container">
+                <div class="input-group">
+                    <div class="search-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <input
+                            type="text"
+                            id="cityInput"
+                            placeholder="Введите название города..."
+                            aria-label="Название города"
+                            autocomplete="off"
+                    >
+                    <button id="submitBtn">Поиск</button>
+                </div>
+                <div class="autocomplete-list" id="autocompleteList"></div>
+            </div>
+
+            <div class="loader" id="loader"></div>
+            <div class="error" id="error"></div>
+
+            <div class="weather-card" id="weatherCard">
+                <!-- Результат будет генерироваться здесь -->
+            </div>
+        </div>
+
+        <div class="popular-section">
+            <h2 class="section-title"><i class="fas fa-fire"></i> Популярные города</h2>
+            <div class="popular-cities" id="popularCities">
+                <!-- Популярные города будут загружены через API -->
+            </div>
+
+            <div class="info-text">
+                <i class="fas fa-info-circle"></i> Данные обновляются каждые 15 минут
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>© Погодный сервис | Тестовое задание</p>
+    </footer>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const cityInput = document.getElementById('cityInput');
+        const submitBtn = document.getElementById('submitBtn');
+        const weatherCard = document.getElementById('weatherCard');
+        const loader = document.getElementById('loader');
+        const errorDiv = document.getElementById('error');
+        const autocompleteList = document.getElementById('autocompleteList');
+        const popularCitiesContainer = document.getElementById('popularCities');
+
+        // Таймер для задержки запроса автодополнения
+        let autocompleteTimer;
+
+        // Загрузка популярных городов при запуске
+        loadPopularCities();
+
+        // Обработчик ввода в поле города
+        cityInput.addEventListener('input', () => {
+            const query = cityInput.value.trim();
+
+            // Очищаем предыдущий таймер
+            clearTimeout(autocompleteTimer);
+
+            // Скрываем список, если запрос слишком короткий
+            if (query.length < 2) {
+                autocompleteList.style.display = 'none';
+                return;
+            }
+
+            // Устанавливаем задержку перед отправкой запроса
+            autocompleteTimer = setTimeout(() => {
+                fetchAutocompleteSuggestions(query);
+            }, 300);
+        });
+
+        // Обработчик нажатия кнопки
+        submitBtn.addEventListener('click', getWeatherData);
+
+        // Обработчик нажатия Enter в поле ввода
+        cityInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                getWeatherData();
+            }
+        });
+
+        async function loadPopularCities() {
+            try {
+                const apiUrl = 'http://127.0.0.1:8000/api/v1/weather/top/five';
+                const response = await fetch(apiUrl);
+
+                if (!response.ok) {
+                    throw new Error(`Ошибка HTTP: ${response.status}`);
+                }
+
+                const citiesData = await response.json();
+
+                // Преобразуем данные API в нужный формат
+                const popularCities = citiesData.map(city => {
+                    // Определяем погодные условия на основе осадков
+                    let conditions;
+                    if (city.precipitation > 5) {
+                        conditions = "Сильный дождь";
+                    } else if (city.precipitation > 0.5) {
+                        conditions = "Дождь";
+                    } else if (city.rain > 0) {
+                        conditions = "Небольшой дождь";
+                    } else {
+                        conditions = "Ясно";
+                    }
+
+                    return {
+                        city: city.city,
+                        temperature: city.temperature_2m,
+                        conditions: conditions,
+                        wind_speed: city.wind_speed_10m,
+                        pressure: city.surface_pressure
+                    };
+                });
+
+                renderPopularCities(popularCities);
+            } catch (error) {
+                console.error('Ошибка при загрузке популярных городов:', error);
+                popularCitiesContainer.innerHTML = `<div class="error">Не удалось загрузить популярные города: ${error.message}</div>`;
+            }
+        }
+
+        function renderPopularCities(cities) {
+            popularCitiesContainer.innerHTML = '';
+
+            cities.forEach(city => {
+                const cityElement = document.createElement('div');
+                cityElement.className = 'popular-city';
+                cityElement.innerHTML = `
+            <i class="fas fa-city weather-icon"></i>
+            <h3>${city.city}</h3>
+            <div class="temp">${city.temperature.toFixed(1)}°C</div>
+            <div class="conditions">${city.conditions}</div>
+            <div class="details">
+                <span><i class="fas fa-wind"></i> ${city.wind_speed.toFixed(1)} м/с</span>
+                <span><i class="fas fa-tachometer-alt"></i> ${city.pressure.toFixed(0)} гПа</span>
+            </div>
+        `;
+
+                cityElement.addEventListener('click', () => {
+                    cityInput.value = city.city;
+                    getWeatherData();
+                });
+
+                popularCitiesContainer.appendChild(cityElement);
+            });
+        }
+
+        // Функция для получения автодополнений
+        async function fetchAutocompleteSuggestions(query) {
+            try {
+                // Используем API Geonames для получения подсказок
+                const response = await fetch(
+                    `https://secure.geonames.org/searchJSON?q=${encodeURIComponent(query)}&maxRows=7&username=weather_demo&featureClass=P`
+                );
+
+                if (!response.ok) {
+                    throw new Error(`Ошибка сервера: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                // Если есть результаты, отображаем их
+                if (data.geonames && data.geonames.length > 0) {
+                    displayAutocompleteSuggestions(data.geonames);
+                } else {
+                    autocompleteList.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Ошибка при получении подсказок:', error);
+                autocompleteList.style.display = 'none';
+            }
+        }
+
+        // Функция для отображения подсказок
+        function displayAutocompleteSuggestions(suggestions) {
+            autocompleteList.innerHTML = '';
+
+            suggestions.forEach(city => {
+                const item = document.createElement('div');
+                item.className = 'autocomplete-item';
+                item.innerHTML = `
+                        <i class="fas fa-city"></i>
+                        <div>
+                            <span class="city-name">${city.name}</span>
+                            <span class="country">${city.countryName}</span>
+                            ${city.adminName1 ? `<span class="region">(${city.adminName1})</span>` : ''}
+                            <div class="hint">Население: ${formatPopulation(city.population)}</div>
+                        </div>
+                    `;
+
+                // При клике на подсказку заполняем поле и скрываем список
+                item.addEventListener('click', () => {
+                    cityInput.value = city.name;
+                    autocompleteList.style.display = 'none';
+                    // Автоматически выполняем поиск погоды
+                    getWeatherData();
+                });
+
+                autocompleteList.appendChild(item);
+            });
+
+            autocompleteList.style.display = 'block';
+        }
+
+        // Форматирование численности населения
+        function formatPopulation(population) {
+            if (!population) return 'нет данных';
+            if (population >= 1000000) {
+                return (population / 1000000).toFixed(1) + ' млн.';
+            }
+            if (population >= 1000) {
+                return (population / 1000).toFixed(1) + ' тыс.';
+            }
+            return population;
+        }
+
+        // Скрываем автодополнение при клике вне поля
+        document.addEventListener('click', (e) => {
+            if (!cityInput.contains(e.target) && !autocompleteList.contains(e.target)) {
+                autocompleteList.style.display = 'none';
+            }
+        });
+
+        async function getWeatherData() {
+            const city = cityInput.value.trim();
+
+            if (!city) {
+                showError("Пожалуйста, введите название города");
+                return;
+            }
+
+            // Скрываем предыдущие результаты и ошибки
+            hideError();
+            hideWeatherCard();
+            showLoader();
+
+            try {
+                // Формируем URL для вашего API
+                const apiUrl = `http://127.0.0.1:8000/api/v1/weather/weather/?city=${encodeURIComponent(city)}`;
+
+                const response = await fetch(apiUrl);
+
+                if (!response.ok) {
+                    // Пытаемся получить детальную ошибку от API
+                    let errorMessage = `Ошибка сервера: ${response.status}`;
+                    try {
+                        const errorData = await response.json();
+                        if (errorData.detail) {
+                            errorMessage = errorData.detail;
+                        }
+                    } catch (e) {
+                        // Не удалось распарсить JSON с ошибкой
+                    }
+                    throw new Error(errorMessage);
+                }
+
+                const weatherData = await response.json();
+                displayWeather(weatherData);
+            } catch (error) {
+                showError(`Ошибка: ${error.message}`);
+            } finally {
+                hideLoader();
+            }
+        }
+
+        function displayWeather(data) {
+            // Преобразуем время в читаемый формат
+            const timestamp = new Date(data.time);
+            const formattedTime = timestamp.toLocaleString('ru-RU', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            // Функция для определения направления ветра по градусам
+            function getWindDirection(degrees) {
+                const directions = ['С', 'СВ', 'В', 'ЮВ', 'Ю', 'ЮЗ', 'З', 'СЗ'];
+                const index = Math.round((degrees % 360) / 45) % 8;
+                return directions[index];
+            }
+
+            // Генерируем HTML для отображения данных
+            weatherCard.innerHTML = `
+                    <div class="city-name">${data.city}</div>
+                    <div class="timestamp">Данные на: ${formattedTime}</div>
+
+                    <div class="weather-grid">
+                        <div class="weather-item">
+                            <div class="weather-title">Температура</div>
+                            <div class="weather-value">
+                                <span class="temperature-highlight">${data.temperature_2m}</span>
+                                <span class="weather-unit">°C</span>
+                            </div>
+                        </div>
+
+                        <div class="weather-item">
+                            <div class="weather-title">Осадки</div>
+                            <div class="weather-value">${data.precipitation.toFixed(1)} <span class="weather-unit">мм</span></div>
+                        </div>
+
+                        <div class="weather-item">
+                            <div class="weather-title">Дождь</div>
+                            <div class="weather-value">${data.rain.toFixed(1)} <span class="weather-unit">мм</span></div>
+                        </div>
+
+                        <div class="weather-item">
+                            <div class="weather-title">Давление</div>
+                            <div class="weather-value">${data.surface_pressure} <span class="weather-unit">гПа</span></div>
+                        </div>
+
+                        <div class="weather-item">
+                            <div class="weather-title">Скорость ветра</div>
+                            <div class="weather-value">${data.wind_speed_10m.toFixed(1)} <span class="weather-unit">м/с</span></div>
+                        </div>
+
+                        <div class="weather-item">
+                            <div class="weather-title">Направление ветра</div>
+                            <div class="weather-value">
+                                ${data.wind_direction_10m}°
+                                <span class="wind-direction">${getWindDirection(data.wind_direction_10m)}</span>
+                            </div>
+                        </div>
+
+                        <div class="weather-item">
+                            <div class="weather-title">Порывы ветра</div>
+                            <div class="weather-value">${data.wind_gusts_10m.toFixed(1)} <span class="weather-unit">м/с</span></div>
+                        </div>
+
+                        <div class="weather-item">
+                            <div class="weather-title">Интервал измерений</div>
+                            <div class="weather-value">${data.interval} <span class="weather-unit">мин</span></div>
+                        </div>
+                    </div>
+
+                    <div class="highlight">
+                        <div class="weather-title">Текущие условия</div>
+                        <div class="weather-value">
+                            ${data.temperature_2m}°C,
+                            Ветер: ${data.wind_speed_10m.toFixed(1)} м/с (${getWindDirection(data.wind_direction_10m)})
+                        </div>
+                    </div>
+                `;
+
+            showWeatherCard();
+        }
+
+        function showLoader() {
+            loader.style.display = 'block';
+        }
+
+        function hideLoader() {
+            loader.style.display = 'none';
+        }
+
+        function showWeatherCard() {
+            weatherCard.classList.add('visible');
+        }
+
+        function hideWeatherCard() {
+            weatherCard.classList.remove('visible');
+        }
+
+        function showError(message) {
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            autocompleteList.style.display = 'none';
+        }
+
+        function hideError() {
+            errorDiv.style.display = 'none';
+        }
+    });
+</script>
+</body>
+</html>
