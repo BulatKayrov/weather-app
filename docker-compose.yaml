@@ -1,11 +1,12 @@
-services:
+version: "3.8"
 
+services:
   app:
     build:
       context: .
+    container_name: weather-service
     env_file:
       - .env
-    container_name: weather-app
-    command: src/docker/run_migrations.sh && src/docker/app.sh
+    command: ./docker/app.sh
     ports:
       - "8000:8000"
