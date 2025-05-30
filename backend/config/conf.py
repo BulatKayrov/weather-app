@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     @property
     def dev_db_url(self):
         db_path = BASE_DIR / "database.db"
-        return f"sqlite+aiosqlite:///{db_path.as_posix()}"
+        return f"sqlite+aiosqlite:///{db_path}"
 
 
 settings = Settings()

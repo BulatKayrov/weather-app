@@ -11,5 +11,6 @@ dependencies = [
     "fastapi[all]>=0.115.12",
     "geopy>=2.4.1",
     "gunicorn>=23.0.0",
+    "pytest>=8.3.5",
     "sqlalchemy>=2.0.41",
 ]
