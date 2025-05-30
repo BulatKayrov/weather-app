@@ -16,7 +16,7 @@ app = FastAPI(
     version="0.1.0",
 )
 
-templates = Jinja2Templates(directory=f"{BASE_DIR}/src/frontend")
+templates = Jinja2Templates(directory=f"{BASE_DIR}/frontend")
 
 app.include_router(router)
 app.add_middleware(

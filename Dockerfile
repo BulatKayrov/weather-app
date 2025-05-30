@@ -1,33 +1,19 @@
-FROM python:3.13-bookworm
+FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim
 
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONPATH=/app
+
 WORKDIR /app
 
-# Установка системных зависимостей
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
+ENV UV_COMPILE_BYTECODE=1
+RUN --mount=type=cache,target=/root/.cache/uv \
+    --mount=type=bind,source=uv.lock,target=uv.lock \
+    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv sync --locked --no-install-project --no-dev
 
-# Установка uv
-ADD https://astral.sh/uv/install.sh /uv-installer.sh
-RUN sh /uv-installer.sh && rm /uv-installer.sh
-ENV PATH="/root/.local/bin/:$PATH"
+COPY . .
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --locked --no-dev
+ENV PATH="/app/.venv/bin:$PATH"
 
-# Копирование зависимостей и установка
-COPY pyproject.toml .
-RUN uv sync
+RUN chmod a+x ./docker/*.sh
 
-# Порт приложения
-EXPOSE 8000
-
-# Команда запуска
-CMD ["gunicorn", "main:app", \
-    "--workers", "1", \
-    "--worker-class", "uvicorn.workers.UvicornWorker", \
-    "--bind", "0.0.0.0:8000", \
-    "--timeout", "120", \
-    "--log-level", "debug", \
-    "--access-logfile", "-", \
-    "--error-logfile", "-"]
+CMD ["./docker/app.sh"]

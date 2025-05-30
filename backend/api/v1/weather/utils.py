@@ -4,23 +4,34 @@
 """
 
 import httpx
+from aiohttp import ClientTimeout
+from geopy.adapters import AioHTTPAdapter
+from geopy.exc import GeocoderTimedOut
 from geopy.geocoders import Nominatim
 
 import aiohttp
 
 
-def format_city(city: str) -> tuple[float, float]:
-    geolocator = Nominatim(user_agent="app")
-    location = geolocator.geocode(city)
+async def format_city(city: str) -> tuple[float, float]:
+    async with Nominatim(
+        user_agent="app",
+        adapter_factory=AioHTTPAdapter,
+        timeout=3,
+    ) as geolocator:
+        location = await geolocator.geocode(city)
 
     return location.latitude, location.longitude
 
 
 async def get_weather(city: str):
-    latitude, longitude = format_city(city=city)
+    try:
+        latitude, longitude = await format_city(city=city)
+    except GeocoderTimedOut:
+        latitude, longitude = await format_city(city=city)
+
     url = f"https://api.open-meteo.com/v1/forecast?latitude={latitude}&longitude={longitude}&current=temperature_2m,precipitation,rain,surface_pressure,wind_speed_10m,wind_direction_10m,wind_gusts_10m&wind_speed_unit=ms"
 
-    async with aiohttp.ClientSession() as session:
+    async with aiohttp.ClientSession(timeout=ClientTimeout(2)) as session:
         async with session.get(url) as response:
             response = await response.json()
             data = response.get("current")
